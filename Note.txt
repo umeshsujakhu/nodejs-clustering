@@ -1,0 +1,124 @@
+Reference : https://blog.bitsrc.io/nodejs-performance-optimization-with-clustering-b52915054cc2
+
+
+Load Testing : 
+    - loadtest http://localhost:3000/api/nocluster -n 1000 -c 100
+
+    - loadtest http://localhost:3001/api/cluster -n 1000 -c 100
+
+
+Awesome! You’re already in a great position with working code examples and load test results. Here’s how you can structure your knowledge-sharing session to explain Node.js clustering effectively with performance benchmarking.
+
+⸻
+
+🧠 Node.js Clustering - Knowledge Sharing
+
+1. Why Clustering in Node.js?
+	•	Node.js runs in a single-threaded event loop by default.
+	•	While it’s great for I/O-bound operations, it cannot utilize multiple CPU cores for CPU-bound operations.
+	•	Clustering is a way to fork multiple instances (workers) of your Node.js app to utilize all CPU cores.
+
+“Each worker is a separate Node.js process with its own event loop and memory.”
+
+⸻
+
+2. Code Explanation
+
+🧱 no-clustering.js
+	•	A simple Express app.
+	•	Runs in a single process.
+	•	CPU-intensive endpoint: /api/nocluster simulates a heavy calculation.
+
+for (let i = Math.pow(base, 7); i >= 0; i--) {
+  result += i + Math.pow(i, 10);
+}
+
+	•	Only one request is processed at a time during heavy computation — others wait.
+
+⸻
+
+🧠 clustering.js
+	•	Uses Node’s cluster module.
+	•	Checks if it’s the master process:
+	•	Logs CPU count.
+	•	Spawns workers equal to CPU cores.
+	•	Replaces any worker if it crashes.
+
+for (let i = 0; i < totalCPUs; i++) {
+  cluster.fork();
+}
+
+	•	Each worker runs its own instance of the Express app.
+	•	Incoming requests get distributed across all workers.
+	•	Effectively parallel processing of CPU-bound tasks.
+
+⸻
+
+3. Visual Comparison
+
+Feature	No Clustering	With Clustering
+Processes	Single	Multiple (per core)
+CPU Core Usage	1	All available cores
+Handles CPU-heavy ops	Sequentially	In parallel
+Performance under load	Poor	Better
+Fault tolerance	No	Yes (respawns worker)
+
+
+
+⸻
+
+4. Load Testing Explained
+
+✅ What you did:
+
+You used loadtest to simulate 1000 requests with 100 concurrent connections to test each app.
+
+loadtest http://localhost:3000/api/nocluster -n 1000 -c 100
+loadtest http://localhost:3001/api/cluster -n 1000 -c 100
+
+📊 Interpreting the results:
+	•	Without Clustering:
+	•	You likely saw longer response times.
+	•	Node.js is blocked during the CPU-heavy task.
+	•	Other requests have to wait in line.
+	•	With Clustering:
+	•	The load is spread across multiple processes.
+	•	Multiple requests can be handled simultaneously.
+	•	Resulted in lower average latency and better throughput.
+
+You can also show the stats output from loadtest like:
+
+Requests: 1000
+Concurrency: 100
+Completed requests: 1000
+Total time: 12s
+Requests per second: 83.3
+
+Compare those for both scenarios.
+
+⸻
+
+5. Real-world Use Cases
+	•	Ideal for CPU-intensive tasks like image processing, data crunching, or encryption.
+	•	Helps prevent blocking the event loop.
+	•	Use along with PM2 or Node.js Cluster for production setups.
+
+⸻
+
+6. Caveats
+	•	Workers don’t share memory — no shared state.
+	•	You’ll need IPC (inter-process communication) or shared databases like Redis for shared data.
+	•	Still runs multiple processes — not threads — unlike multithreading in other languages.
+
+⸻
+
+7. Tips for Presentation
+	•	Start with the problem: single-threaded limitation of Node.js.
+	•	Walk through both versions of the code briefly.
+	•	Emphasize the performance difference (share your test results).
+	•	Use diagrams if possible (master-worker structure).
+	•	End with real-world usage and gotchas.
+
+⸻
+
+Would you like help designing a slide deck or preparing a sample result chart from your load test results?
