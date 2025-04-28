@@ -1,0 +1,34 @@
+🧩 1. Master-Worker Architecture in Node.js Clustering
+
+Here’s how you can explain and visualize it:
+
+⸻
+
+🔧 Explanation
+	•	The Master Process (a.k.a. the main Node.js process) is responsible for:
+	•	Detecting how many CPU cores are available.
+	•	Spawning a new Worker Process (child process) for each CPU core using cluster.fork().
+	•	Monitoring the health of workers.
+	•	Each Worker Process runs independently, but handles the same code (Express app in your case).
+	•	The OS load balancer distributes incoming connections among the workers.
+
+⸻
+
+🖼️ Diagram:
+
+You can sketch or use the following structure for a slide:
+
+         +-------------------+
+         |   Master Process  |  (PID: 1234)
+         +-------------------+
+                   |
+      +------------+-------------+
+      |            |             |
++-------------+ +-------------+ +-------------+
+|  Worker #1  | |  Worker #2  | |  Worker #3  |  ... (up to # of CPU cores)
+|  (PID: 2345)| |  (PID: 2346)| |  (PID: 2347)|
++-------------+ +-------------+ +-------------+
+
+ Each worker runs:
+ - Express server
+ - Handles client requests
